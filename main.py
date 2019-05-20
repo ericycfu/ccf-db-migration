@@ -3,15 +3,29 @@ import db_operations as dbop
 
 username = input("enter user:\n")
 password = input("enter password:\n")
+
+def get_line_as_array(line):
+	info = line.split(",")
+	for i in range(0, len(info)):
+		info[i] = info[i].strip("\n") #remove newline characters
+		info[i] = info[i].strip("'")#remove quotation makrs
+		if (info[i] == "NULL"):
+			info[i] = None
+	return info
+
+config = {
+	"host" : "localhost",
+	"user" : username,
+	"passwd" : password,
+	"database" : "mydatabase"
+}
+
 #conect to db
 conn = mysql.connector.connect(
 	host = "localhost",
 	user = username,
 	passwd = password
 )
-
-print(conn)
-
 
 cursor = conn.cursor(buffered = True)
 
@@ -24,16 +38,49 @@ except:
 cursor.execute("CREATE DATABASE mydatabase")
 print("database created")
 conn.database = "mydatabase"
-cursor.execute("SHOW DATABASES")
-print("printing cursor")
-for x in cursor:
-	print(x)   
 
 #creates the tables
-create_db = open("create_database.sql")
-create_db = create_db.read()
-cursor.execute(create_db)
+print("creating tables")
+create_patient = open("create_patient.sql")
+create_patient = create_patient.read()
+cursor.execute(create_patient)
 conn.close()
+
+conn = mysql.connector.connect(**config)
+cursor = conn.cursor(buffered = True)
+create_study = open("create_study.sql")
+create_study = create_study.read()
+cursor.execute(create_study)
+conn.close()
+
+conn = mysql.connector.connect(**config)
+cursor = conn.cursor(buffered = True)
+create_media = open("create_media.sql")
+create_media = create_media.read()
+cursor.execute(create_media)
+conn.close()
+
+conn = mysql.connector.connect(**config)
+cursor = conn.cursor(buffered = True)
+create_media_detail = open("create_media_detail.sql")
+create_media_detail = create_media_detail.read()
+cursor.execute(create_media_detail)
+conn.close()
+
+conn = mysql.connector.connect(**config)
+cursor = conn.cursor(buffered = True)
+create_video_record = open("create_video_record.sql")
+create_video_record = create_video_record.read()
+cursor.execute(create_video_record)
+conn.close()
+
+conn = mysql.connector.connect(**config)
+cursor = conn.cursor(buffered = True)
+create_eeg_record = open("create_eeg_record.sql")
+create_eeg_record = create_eeg_record.read()
+cursor.execute(create_eeg_record)
+conn.close()
+
 
 
 
@@ -46,17 +93,8 @@ conn = mysql.connector.connect(
 cursor = conn.cursor(buffered = True)
 conn.autocommit = True
 
-print("printing mydatabase")
-cursor.execute("SHOW tables")
 
-def get_line_as_array(line):
-	info = line.split(",")
-	for i in range(0, len(info)):
-		info[i] = info[i].strip("'")#remove quotation makrs
-		info[i] = info[i].strip("\n") #remove newline characters
-		if (info[i] == "NULL"):
-			info[i] = None
-	return info
+
 
 
 print("adding data")
@@ -64,45 +102,51 @@ print("adding data")
 patient = open("data/patient.dat")
 for line in patient.readlines():
 	entry = get_line_as_array(line)
-	print(entry)
 	dbop.insert_patient(conn, entry[0], entry[1], entry[2], entry[3])
 patient.close()
-
-cursor.execute("SELECT * FROM arch_patient")
-for row in cursor:
-	print(row)
 
 study = open("data/study.dat")
 for line in study.readlines():
 	entry = get_line_as_array(line)
-	print(entry)
 	dbop.insert_study(conn, entry[0], entry[1], entry[2], entry[3], entry[4])
 study.close()
-cursor.execute("SELECT * FROM arch_study")
-for row in cursor:
-	print(row)
+
+print("printing tables in mydatabase")
+cursor.execute("SHOW TABLES")
+conn.commit()
+for x in cursor:
+    print(x)
 
 
-'''
-eeg_record = open()
-for line in eeg_record.readlines():
-	dbop.insert_eeg_record()
-eeg_record.close()
 
-media = open()
+media = open("data/media.dat")
 for line in media.readlines():
-	dbop.insert_media()
+	entry = get_line_as_array(line)
+	dbop.insert_media(conn, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7])
 media.close()
 
-media_detail = open()
+media_detail = open("data/media_detail.dat")
 for line in media_detail.readlines():
-	dbop.insert_media_detail()
+	entry = get_line_as_array(line)
+	dbop.insert_media_detail(conn, entry[0], entry[1], entry[2], entry[3])
 media_detail.close()
 
-video_record = open()
+
+video_record = open("data/video_record.dat")
 for line in video_record.readlines():
-	dbop.insert_video_record()
+	entry = get_line_as_array(line)
+	print(entry)
+	dbop.insert_video_record(conn, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7])
 video_record.close()
-'''
+
+eeg_record = open("data/eeg_record.dat")
+for line in eeg_record.readlines():
+	entry = get_line_as_array(line)
+	dbop.insert_eeg_record(conn, entry[0], entry[1], entry[2],entry[3], entry[4], entry[5], entry[6], entry[7],
+		entry[8], entry[9], entry[10], entry[11], entry[12], entry[13])
+eeg_record.close()
+
+
+
 
 conn.close()
