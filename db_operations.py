@@ -1,6 +1,6 @@
 
 def exec_operation(conn, query, tup):
-	cursor = conn.cursor()
+	cursor = conn.cursor(buffered = True)
 	cursor.execute(query, tup)
 	conn.commit()
 	cursor.close()
@@ -9,12 +9,13 @@ def exec_operation(conn, query, tup):
 
 def insert_patient(conn, patientid, first_name, last_name, middle_init = None):
 	tup = (patientid, first_name, last_name, middle_init)
-	query = "INSERT INTO arch_patient VALUES (?, ?, ?, ?)"
+	query = "INSERT INTO arch_patient VALUES (%s, %s, %s, %s)"
+	print(tup)
 	exec_operation(conn, query, tup)
 
 def insert_study(conn, study_id, patient_id, media_label = None, completed_date= None, mtg_size= None):
 	tup = (study_id, patient_id, media_label, completed_date, mtg_size)
-	query = "INSERT INTO arch_study VALUES (?, ?, ?, ?, ?)"
+	query = "INSERT INTO arch_study VALUES (%s, %s, %s, %s, %s)"
 	exec_operation(conn, query, tup)
 
 def insert_eeg_record(conn, study_id, patient_id, rec_name, media_label, k_cksum = None,
@@ -35,4 +36,5 @@ def insert_media_detail(conn, media_label, volume_no, desc= None, study_id= None
 	exec_operation(conn, query, tup)
 
 def insert_video_record(conn, study_id, patient_id, vid_name, media_label, video_size = None, start_time = None,
-	end_time = None, v_cksum = None)
+	end_time = None, v_cksum = None):
+	pass
