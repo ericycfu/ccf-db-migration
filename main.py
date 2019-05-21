@@ -1,16 +1,35 @@
 import mysql.connector
 import db_operations as dbop
+import time
+import re
+import sys
 
 username = input("enter user:\n")
 password = input("enter password:\n")
 
+start = time.time()
+
 def get_line_as_array(line):
-	info = line.split(",")
-	for i in range(0, len(info)):
+	info = re.split("',", line) #data is separated by ',' but sometimes, there is just ', like in arch_study #if null is after entry
+	#what if there is ,' ? 
+	i = 0
+	while i < len(info):
 		info[i] = info[i].strip("\n") #remove newline characters
-		info[i] = info[i].strip("'")#remove quotation makrs
+		info[i] = info[i].strip("'")#remove quotation marks
+		if (",'" in info[i]): # this is the case not taken care of above if null is before entry
+			splitted = re.split(",'", info[i])
+			del info[i]
+			for j in range(0, len(splitted)):
+				info.insert(i, splitted[(j*-1)-1])
+		if ("L,N" in info[i]): # if multiple nulls in a row
+			splitted = re.split(",", info[i]) 
+			del info[i]
+			for j in range(0, len(splitted)):
+				info.insert(i, splitted[(j*-1)-1])
 		if (info[i] == "NULL"):
 			info[i] = None
+		i += 1
+
 	return info
 
 config = {
@@ -46,6 +65,8 @@ create_patient = create_patient.read()
 cursor.execute(create_patient)
 conn.close()
 
+
+#apprently mysql connections time out so have to recreate???
 conn = mysql.connector.connect(**config)
 cursor = conn.cursor(buffered = True)
 create_study = open("create_study.sql")
@@ -82,69 +103,98 @@ cursor.execute(create_eeg_record)
 conn.close()
 
 
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds to create the tables")
+start = time.time()
 
-
-#apprently mysql connections time out so have to recreate???
-conn = mysql.connector.connect(
-	host = "localhost",
-	user = username,
-	passwd = password,
-	database = "mydatabase")
+conn = mysql.connector.connect(**config)
 cursor = conn.cursor(buffered = True)
-conn.autocommit = True
-
-
 
 
 
 print("adding data")
 #fills the tables with data
-patient = open("data/patient.dat")
+patient = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_PATIENT.dat")
 for line in patient.readlines():
 	entry = get_line_as_array(line)
-	dbop.insert_patient(conn, entry[0], entry[1], entry[2], entry[3])
+	try:
+		dbop.insert_patient(conn, entry[0], entry[1], entry[2], entry[3])
+	except KeyboardInterrupt:
+		sys.exit()
+	except:
+		print("this did not work")
+		print(entry)
 patient.close()
 
-study = open("data/study.dat")
+print("done with patient")
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds to fill patient")
+start = time.time()
+
+study = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_STUDY.dat")
 for line in study.readlines():
 	entry = get_line_as_array(line)
 	dbop.insert_study(conn, entry[0], entry[1], entry[2], entry[3], entry[4])
 study.close()
 
-print("printing tables in mydatabase")
-cursor.execute("SHOW TABLES")
-conn.commit()
-for x in cursor:
-    print(x)
 
+print("done with study")
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill study")
+start = time.time()
 
-
-media = open("data/media.dat")
+media = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_MEDIA.dat")
 for line in media.readlines():
 	entry = get_line_as_array(line)
 	dbop.insert_media(conn, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7])
 media.close()
 
-media_detail = open("data/media_detail.dat")
+print("done with media")
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill media")
+start = time.time()
+
+
+media_detail = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_MEDIA_DETAIL.dat")
 for line in media_detail.readlines():
 	entry = get_line_as_array(line)
 	dbop.insert_media_detail(conn, entry[0], entry[1], entry[2], entry[3])
 media_detail.close()
 
 
-video_record = open("data/video_record.dat")
+print("done with media_detail")
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill media_detail")
+start = time.time()
+
+'''
+video_record = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_VIDEO_RECORD.dat")
 for line in video_record.readlines():
 	entry = get_line_as_array(line)
-	print(entry)
-	dbop.insert_video_record(conn, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7])
+	try:
+		dbop.insert_video_record(conn, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7])
+	except KeyboardInterrupt:
+		sys.exit()
+	except:
+		print("this did not work")
+		print(entry)
+		#likely because of this
+		#ttps://stackoverflow.com/questions/35602939/mysql-1292-incorrect-datetime-value
 video_record.close()
 
-eeg_record = open("data/eeg_record.dat")
+
+print("done with video_record")
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill video_record")
+start = time.time()
+'''
+
+
+eeg_record = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_EEG_RECORD.dat")
 for line in eeg_record.readlines():
 	entry = get_line_as_array(line)
+	print(entry)
 	dbop.insert_eeg_record(conn, entry[0], entry[1], entry[2],entry[3], entry[4], entry[5], entry[6], entry[7],
 		entry[8], entry[9], entry[10], entry[11], entry[12], entry[13])
 eeg_record.close()
+
+print("done with eeg_record")
+print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill eeg_record")
+start = time.time()
 
 
 
