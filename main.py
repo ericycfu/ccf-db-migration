@@ -8,7 +8,7 @@ username = input("enter user:\n")
 password = input("enter password:\n")
 
 start = time.time()
-
+'''
 def get_line_as_array(line):
 	info = re.split("',", line) #data is separated by ',' but sometimes, there is just ', like in arch_study #if null is after entry
 	#what if there is ,' ? 
@@ -30,7 +30,32 @@ def get_line_as_array(line):
 			info[i] = None
 		i += 1
 
-	return info
+	return info'''
+
+def get_line_as_array(line):
+	i = 0
+	lowest = 0
+	info = [line]
+	while i < len(info):
+		lowest = info[i].find(",", lowest+1)
+		if (lowest == -1):
+			info[i] = info[i].strip("\n")
+			info[i] = info[i].strip("'")
+			if (info[i] == "NULL"):
+				info[i] = None
+			return info  
+		if((info[i][lowest-1] in ["'", "L"]) or (info[i][lowest+1] in ["'", "N"]) ):
+			first =	info[i][0:lowest]
+			second = info[i][lowest+1:]
+			info[i] = second
+			info.insert(i, first)
+			info[i] = info[i].strip("'")
+			if (info[i] == "NULL"):
+				info[i] = None
+			lowest = 0
+			i += 1
+
+
 
 config = {
 	"host" : "localhost",
@@ -125,6 +150,7 @@ for line in patient.readlines():
 		print(entry)
 patient.close()
 
+
 print("done with patient")
 print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds to fill patient")
 start = time.time()
@@ -162,7 +188,7 @@ print("done with media_detail")
 print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill media_detail")
 start = time.time()
 
-'''
+
 video_record = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_VIDEO_RECORD.dat")
 for line in video_record.readlines():
 	entry = get_line_as_array(line)
@@ -181,13 +207,12 @@ video_record.close()
 print("done with video_record")
 print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.time()-start)%60) + " seconds  to fill video_record")
 start = time.time()
-'''
+
 
 
 eeg_record = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_EEG_RECORD.dat")
 for line in eeg_record.readlines():
 	entry = get_line_as_array(line)
-	print(entry)
 	dbop.insert_eeg_record(conn, entry[0], entry[1], entry[2],entry[3], entry[4], entry[5], entry[6], entry[7],
 		entry[8], entry[9], entry[10], entry[11], entry[12], entry[13])
 eeg_record.close()
