@@ -209,9 +209,12 @@ print("it took " + str((time.time()-start)//60) + " minutes and " + str((time.ti
 start = time.time()
 
 
-
+i = 0
 eeg_record = open("E:/Documents/arch/archdb_exp2016/ARCHDB_ARCH_EEG_RECORD.dat")
 for line in eeg_record.readlines():
+	i+=1
+	if (i%50==0):
+		print(i);
 	entry = get_line_as_array(line)
 	dbop.insert_eeg_record(conn, entry[0], entry[1], entry[2],entry[3], entry[4], entry[5], entry[6], entry[7],
 		entry[8], entry[9], entry[10], entry[11], entry[12], entry[13])
