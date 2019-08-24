@@ -14,7 +14,7 @@ Migrating solid database to mysql database using python and creating frontend to
 
 4. Install WAMP
 
-5. Stop IIS from running, so localhost refers to WAMP www folder
+5. Stop IIS from running, so localhost refers to WAMP www folder. To do so, run command prompt as admin, and type "iisreset /stop"
 
 6. Right click on wamp, click start all services, should automatically connect to mysql db. Can check by right clicking wamp, logging into mysql server, and checking that "mydatabase" is located on left.
 
@@ -25,5 +25,5 @@ The location of mysql config file was C:\ProgramData\MySQL\MySQL Server 8.0\
 so steps are to edit the mysql file, use "net stop MySQL80" in command prompt, click on mysql.exe in C:\Program Files\MySQL\MySQL Server 8.0\bin, and then restart all services in wampserver (make sure icon is green not red/orange)
 
 
-9. Move home.php into C:\wamp64\www, can now go to localhost/home.php to see it.
+9. Move home.php into C:\wamp64\www, can now go to localhost/home.php to see it. Media Name query not yet implemented.
 
